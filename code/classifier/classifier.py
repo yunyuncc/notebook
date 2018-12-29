@@ -65,9 +65,11 @@ class Net2(nn.Module):
         super(Net2, self).__init__()
         self.convs = nn.Sequential(
             nn.Conv2d(3,6,5),
+            nn.BatchNorm2d(6),
             nn.ReLU(),
             nn.MaxPool2d(2,2),
             nn.Conv2d(6,16,5),
+            nn.BatchNorm2d(16),
             nn.ReLU(),
             nn.MaxPool2d(2,2)
         )
@@ -86,16 +88,18 @@ class Net2(nn.Module):
 
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
+cnt = 2000
+lr = 0.002
 def train_model():
     net = Net2()
     print(device)
     net.to(device)
-    # loss函数
+    # 交叉熵loss函数，一般用在分类问题当中
     criterion = nn.CrossEntropyLoss()
+    #criterion = nn.MSELoss()
     # 优化器
-    optimizer = optim.SGD(net.parameters(), lr = 0.001, momentum=0.9)
-
+    optimizer = optim.SGD(net.parameters(), lr, momentum=0.9)
+    losses = []
     for epoch in range(2):
         running_loos = 0.0
         for i, data in enumerate(trainloader,start=0):
@@ -109,14 +113,19 @@ def train_model():
             loss.backward()
             optimizer.step()
             running_loos += loss.item()
-            if i % 2000 == 1999:
-                print('[%d, %5d] loss: %.3f' % (epoch + 1, i+1, running_loos/2000))
+            
+            if i % cnt == cnt-1:
+                print('[%d, %5d] loss: %.3f' % (epoch + 1, i+1, running_loos/cnt))
+                losses.append(running_loos/cnt)
                 running_loos = 0.0
     print('Finish traing')
+    losses = np.asarray(losses)
+    plt.plot(losses)
+    plt.savefig("loss-%d-lr-%f.jpg" % (cnt, lr))
     return net
 
 
-do_train = False
+do_train = True
 
 if do_train:
     print("do train")
