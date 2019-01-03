@@ -1,0 +1,6 @@
+Hello Java
+Hello C  
+Hello Java
+Hello C++
+Hello Go
+Hello Python
