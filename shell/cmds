@@ -1,0 +1,4 @@
+zcat  ***.gz
+
+date -d@timenum
+
