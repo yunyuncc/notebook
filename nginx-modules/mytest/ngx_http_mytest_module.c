@@ -158,15 +158,20 @@ static ngx_int_t ngx_http_mytest_handler(ngx_http_request_t *r){
         return NGX_ERROR;
     }
     //TODO get ip from upstream_domain
-    static struct sockaddr_in backend_sock_addr;
-    backend_sock_addr.sin_family = AF_INET;
-    backend_sock_addr.sin_port = htons((in_port_t) 8000);
-    backend_sock_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
     
-    u->resolved->sockaddr = (struct sockaddr *)&backend_sock_addr;
-    u->resolved->socklen = sizeof(struct sockaddr_in);
-    u->resolved->naddrs = 1;
-    u->resolved->port = htons((in_port_t) 8000);
+    u->resolved->port = (in_port_t) 8000;
+    const char* hoststr = "www.wangyycc.com";
+    
+    ngx_str_t host;
+
+    host.len = strlen(hoststr);
+    host.data = ngx_palloc(r->pool, host.len);
+    if(host.data == NULL){
+        ngx_log_error(NGX_LOG_INFO, r->connection->log, 0, "alloc fail");
+        return NGX_ERROR;
+    }
+    ngx_memcpy(host.data, hoststr, host.len);
+    u->resolved->host = host;
     u->create_request = mytest_upstream_create_request;
     u->process_header = mytest_upstream_process_status_line;
     u->finalize_request = mytest_upstream_finalize_request;
